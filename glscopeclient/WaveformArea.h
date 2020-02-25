@@ -378,6 +378,8 @@ protected:
 	} m_dragState;
 
 	bool	m_firstFrame;
+
+	static bool m_firstGLContextRun;
 };
 
 #endif

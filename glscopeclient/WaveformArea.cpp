@@ -42,6 +42,8 @@
 using namespace std;
 using namespace glm;
 
+bool WaveformArea::m_firstGLContextRun = false;
+
 WaveformArea::WaveformArea(
 	Oscilloscope* scope,
 	OscilloscopeChannel* channel,
@@ -441,6 +443,54 @@ void WaveformArea::on_realize()
 	//Let the base class create the GL context, then select it
 	Gtk::GLArea::on_realize();
 	make_current();
+
+	/* FIXME: This code does not currently function correctly.
+	 *
+	 * github issue reference: https://github.com/azonenberg/scopehal-apps/issues/66
+	 *
+	 * Issues:
+	 *
+	 * - The version returned is not the highest OpenGL version the system supports.
+	 *   This is due to how GTK is creating the OpenGL context, and how OpenGL deals with backwards compatibility.
+	 *   We should probably have GTK create the OpenGL context, requesting version 4.3 as the minimum required version.
+	 *
+	 *   Reference Links:
+	 *   - https://stackoverflow.com/questions/47151394/how-to-tell-which-version-of-opengl-my-graphics-card-supports-on-linux/47166829#47166829
+	 *   - https://stackoverflow.com/questions/46510889/how-can-i-know-which-opengl-version-is-supported-by-my-system/46511741#46511741
+	 *   - https://cgit.freedesktop.org/mesa/demos/tree/src/xdemos/glxinfo.c
+	 *
+	 */
+
+	//Only run on the very first GL context
+	if ( !m_firstGLContextRun )
+	{
+		m_firstGLContextRun = true;
+
+		//Check the OpenGL minimum version requirement
+		int versionMajor;
+		int versionMinor;
+
+ #if 0
+		//Legacy method
+		stringstream ss((const char *) glGetString(GL_VERSION));
+		ss >> versionMajor;
+		ss.ignore(1);
+		ss >> versionMinor;
+ #else
+
+		//New Method
+		glGetIntegerv(GL_MAJOR_VERSION, &versionMajor);
+		glGetIntegerv(GL_MINOR_VERSION, &versionMinor);
+ #endif
+
+		printf("OpenGL Version: %d.%d (%s)\n", versionMajor, versionMinor, (const char *) glGetString(GL_VERSION) );
+
+		if ( versionMajor < 4 || (versionMajor == 4 && versionMinor < 3) )
+		{
+			LogError("ERROR: OpenGL version too old, requires >= 4.3 (found %d.%d)\n", versionMajor, versionMinor);
+			exit(1);
+		}
+	}
 
 	//We're about to draw the first frame after realization.
 	//This means we need to save some configuration (like the current FBO) that GTK doesn't tell us directly
