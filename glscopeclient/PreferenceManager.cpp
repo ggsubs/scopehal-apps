@@ -84,9 +84,9 @@ static void CreateDirectory(const string& path)
 
 void PreferenceManager::InitializeDefaults()
 {
-    AddPreference("test_string", "First test value", "string");
-    AddPreference("test_real", "Second test value", 42.09);
-    AddPreference("test_bool", "Third test value", true);
+    AddPreference("test_string", "Test string", "First test value", "string");
+    AddPreference("test_real", "Test real", "Second test value", 42.09);
+    AddPreference("test_bool", "Test boolean", "Third test value", true);
 }
 
 map<string, Preference>& PreferenceManager::AllPreferences()
@@ -197,22 +197,30 @@ void PreferenceManager::LoadPreferences()
             {
                 auto& preference = entry.second;
             
-                switch(preference.GetType())
+                try
                 {
-                    case PreferenceType::Boolean:
-                        preference.SetBool(node.as<bool>());
-                        break;
-                        
-                    case PreferenceType::Real:
-                        preference.SetReal(node.as<double>());
-                        break;
-                        
-                    case PreferenceType::String:
-                        preference.SetString(node.as<string>());
-                        break;
-                        
-                    default:
-                        break;
+                    switch(preference.GetType())
+                    {
+                        case PreferenceType::Boolean:
+                            preference.SetBool(node.as<bool>());
+                            break;
+                            
+                        case PreferenceType::Real:
+                            preference.SetReal(node.as<double>());
+                            break;
+                            
+                        case PreferenceType::String:
+                            preference.SetString(node.as<string>());
+                            break;
+                            
+                        default:
+                            break;
+                    }
+                }
+                catch(...)
+                {
+                    LogWarning("Warning: Can't parse preference value %s for preference %s, ignoring",
+                        node.as<string>().c_str(), preference.GetIdentifier().c_str());
                 }
             }
         }
