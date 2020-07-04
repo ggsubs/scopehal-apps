@@ -98,6 +98,7 @@ void help()
 			"    glscopeclient --debug myscope:siglent:lxi:192.166.1.123\n"
 			"    glscopeclient --debug --trace SCPITMCTransport myscope:siglent:usbtmc:/dev/usbtmc0\n"
 			"    glscopeclient --reconnect --retrigger foobar.scopesession\n"
+			"    glscopeclient --debug --trace SCPIUartTransport myscope:tek:serial:/dev/ttyUSB0\n"
 			"\n"
 	);
 }
